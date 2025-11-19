@@ -1,0 +1,10 @@
+{
+  "name": "Executive",
+  "description": "A sophisticated and professional template for experienced professionals",
+  "category": "professional",
+  "preview": "/templates/professional/executive/preview.png",
+  "author": "Portfolio Builder",
+  "version": "1.0.0",
+  "sections": ["summary", "experience", "education", "skills", "achievements"],
+  "features": ["Professional Layout", "Timeline Experience", "Skill Metrics"]
+}

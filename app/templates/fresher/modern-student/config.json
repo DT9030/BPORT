@@ -1,0 +1,10 @@
+{
+  "name": "Modern Student",
+  "description": "A contemporary design perfect for students and recent graduates",
+  "category": "fresher",
+  "preview": "/templates/fresher/modern-student/preview.png",
+  "author": "Portfolio Builder",
+  "version": "1.0.0",
+  "sections": ["summary", "education", "skills", "projects", "certifications"],
+  "features": ["Modern Design", "Responsive Layout", "Skill Visualization"]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Minimal Fresher",
+  "description": "A clean and professional template for students and recent graduates",
+  "category": "fresher",
+  "preview": "/templates/fresher/template1/preview.png",
+  "author": "Your Name",
+  "version": "1.0.0",
+  "sections": ["summary", "education", "skills", "projects"]
+}

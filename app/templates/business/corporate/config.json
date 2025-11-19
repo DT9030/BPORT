@@ -1,0 +1,10 @@
+{
+  "name": "Corporate",
+  "description": "A clean and professional template for business professionals",
+  "category": "business",
+  "preview": "/templates/business/corporate/preview.png",
+  "author": "Portfolio Builder",
+  "version": "1.0.0",
+  "sections": ["summary", "experience", "services", "testimonials", "contact"],
+  "features": ["Business Focused", "Service Showcase", "Client Testimonials"]
+}

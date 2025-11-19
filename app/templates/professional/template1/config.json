@@ -1,0 +1,9 @@
+{
+  "name": "Professional",
+  "description": "A sophisticated template for experienced professionals",
+  "category": "professional",
+  "preview": "/templates/professional/template1/preview.png",
+  "author": "Your Name",
+  "version": "1.0.0",
+  "sections": ["summary", "experience", "education", "skills", "projects"]
+}

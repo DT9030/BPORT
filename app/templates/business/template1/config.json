@@ -1,0 +1,9 @@
+{
+  "name": "Business Professional",
+  "description": "An elegant template for business professionals and entrepreneurs",
+  "category": "business",
+  "preview": "/templates/business/template1/preview.png",
+  "author": "Your Name",
+  "version": "1.0.0",
+  "sections": ["summary", "experience", "skills", "achievements"]
+}
