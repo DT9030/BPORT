@@ -114,17 +114,33 @@ export default function LandingPage() {
           animate="visible"
         >
           {/* Animated heading with sliding text */}
-          <div className="flex flex-col items-center justify-center gap-4 mb-12">
+          <div
+            className="flex flex-col items-center justify-center gap-4 mb-12"
+            style={{
+              perspective: "1000px",
+              transformStyle: "preserve-3d"
+            }}
+          >
             <motion.h1
               className="text-8xl md:text-9xl font-bold text-[#ACFFB1]"
-              style={{ fontFamily: "Lilita One" }}
+              style={{
+                fontFamily: "Lilita One",
+                transform: "translateZ(30px)",
+                filter: "drop-shadow(0 0 20px rgba(172, 255, 177, 0.4))",
+                textShadow: "0 0 10px rgba(172, 255, 177, 0.3)"
+              }}
               variants={slideInLeft}
             >
               PORTFOLIO
             </motion.h1>
             <motion.h1
               className="text-8xl md:text-9xl font-bold text-[#ACFFB1]"
-              style={{ fontFamily: "Lilita One" }}
+              style={{
+                fontFamily: "Lilita One",
+                transform: "translateZ(30px)",
+                filter: "drop-shadow(0 0 20px rgba(172, 255, 177, 0.4))",
+                textShadow: "0 0 10px rgba(172, 255, 177, 0.3)"
+              }}
               variants={slideInRight}
             >
               BUILDER
