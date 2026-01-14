@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Lilita_One } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
+import PageTransition from "@/components/PageTransition"
 import "./globals.css"
 
 const lilitaOne = Lilita_One({ weight: "400", subsets: ["latin"] })
@@ -24,7 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${lilitaOne.variable}`}>
-        <Suspense fallback={null}>{children}</Suspense>
+        <PageTransition>
+          <Suspense fallback={null}>{children}</Suspense>
+        </PageTransition>
         <Analytics />
       </body>
     </html>

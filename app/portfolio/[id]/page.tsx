@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import PortfolioPreview from "@/components/portfolio-preview"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Download, Share } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 interface UserData {
@@ -70,30 +70,7 @@ export default function SharedPortfolioPage() {
     }
   }, [params.id])
 
-  const handlePrint = () => {
-    window.print()
-  }
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: portfolioData?.seo?.title || `${portfolioData?.userData.fullName}'s Portfolio`,
-          text:
-            portfolioData?.seo?.description || `Check out ${portfolioData?.userData.fullName}'s professional portfolio`,
-          url: window.location.href,
-        })
-      } catch (err) {
-        // Fallback to clipboard
-        navigator.clipboard.writeText(window.location.href)
-        alert("Link copied to clipboard!")
-      }
-    } else {
-      // Fallback for browsers without Web Share API
-      navigator.clipboard.writeText(window.location.href)
-      alert("Link copied to clipboard!")
-    }
-  }
 
   if (loading) {
     return (
@@ -140,16 +117,7 @@ export default function SharedPortfolioPage() {
                 Create Your Own
               </Button>
             </Link>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handlePrint}>
-                <Download className="w-4 h-4 mr-2" />
-                Print
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleShare}>
-                <Share className="w-4 h-4 mr-2" />
-                Share
-              </Button>
-            </div>
+
           </div>
         </div>
       </header>

@@ -82,6 +82,106 @@ export default function ColorPicker({ selectedScheme, onSchemeChange }: ColorPic
 
   return (
     <div className="space-y-6">
+      {/* Custom Color Picker */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <RefreshCw className="w-5 h-5" />
+            Custom Colors
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium mb-2 break-words">Primary Color</label>
+              <div className="flex items-center gap-3 flex-wrap">
+                <input
+                  type="color"
+                  value={customColors.primary}
+                  onChange={(e) => handleCustomColorChange("primary", e.target.value)}
+                  className="w-12 h-12 rounded-lg border border-border cursor-pointer shrink-0"
+                />
+                <div className="flex-1 min-w-0 max-w-full">
+                  <input
+                    type="text"
+                    value={customColors.primary}
+                    onChange={(e) => handleCustomColorChange("primary", e.target.value)}
+                    className="w-full p-2 border border-border rounded-lg text-sm font-mono break-words"
+                    placeholder="#000000"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Main headings and accents</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2 break-words">Secondary Color</label>
+              <div className="flex items-center gap-3 flex-wrap">
+                <input
+                  type="color"
+                  value={customColors.secondary}
+                  onChange={(e) => handleCustomColorChange("secondary", e.target.value)}
+                  className="w-12 h-12 rounded-lg border border-border cursor-pointer shrink-0"
+                />
+                <div className="flex-1 min-w-0 max-w-full">
+                  <input
+                    type="text"
+                    value={customColors.secondary}
+                    onChange={(e) => handleCustomColorChange("secondary", e.target.value)}
+                    className="w-full p-2 border border-border rounded-lg text-sm font-mono break-words"
+                    placeholder="#000000"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Subheadings and highlights</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2 break-words">Accent Color</label>
+              <div className="flex items-center gap-3 flex-wrap">
+                <input
+                  type="color"
+                  value={customColors.accent}
+                  onChange={(e) => handleCustomColorChange("accent", e.target.value)}
+                  className="w-12 h-12 rounded-lg border border-border cursor-pointer shrink-0"
+                />
+                <div className="flex-1 min-w-0 max-w-full">
+                  <input
+                    type="text"
+                    value={customColors.accent}
+                    onChange={(e) => handleCustomColorChange("accent", e.target.value)}
+                    className="w-full p-2 border border-border rounded-lg text-sm font-mono break-words"
+                    placeholder="#000000"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Buttons and links</p>
+            </div>
+          </div>
+
+          <div className="mt-6 p-4 bg-muted rounded-lg">
+            <h4 className="font-medium mb-2">Color Preview</h4>
+            <div className="flex items-center gap-4">
+              <div className="flex gap-2">
+                <div
+                  className="w-8 h-8 rounded-lg border border-gray-200"
+                  style={{ backgroundColor: customColors.primary }}
+                />
+                <div
+                  className="w-8 h-8 rounded-lg border border-gray-200"
+                  style={{ backgroundColor: customColors.secondary }}
+                />
+                <div
+                  className="w-8 h-8 rounded-lg border border-gray-200"
+                  style={{ backgroundColor: customColors.accent }}
+                />
+              </div>
+              <div className="text-sm text-muted-foreground">Your custom color combination</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Preset Color Schemes */}
       <Card>
         <CardHeader>
@@ -117,116 +217,11 @@ export default function ColorPicker({ selectedScheme, onSchemeChange }: ColorPic
                       style={{ backgroundColor: scheme.accent }}
                     />
                   </div>
-                  {selectedScheme.name === scheme.name && (
-                    <Badge variant="default" className="text-xs">
-                      Selected
-                    </Badge>
-                  )}
                 </div>
                 <h3 className="font-semibold text-sm mb-1">{scheme.name}</h3>
                 <p className="text-xs text-muted-foreground">{scheme.description}</p>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Custom Color Picker */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <RefreshCw className="w-5 h-5" />
-            Custom Colors
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-2 break-words">Primary Color</label>
-              <div className="flex items-center gap-3 flex-wrap">
-                <input
-                  type="color"
-                  value={customColors.primary}
-                  onChange={(e) => handleCustomColorChange("primary", e.target.value)}
-                  className="w-12 h-12 rounded-lg border border-border cursor-pointer shrink-0"
-                />
-                <div className="flex-1 min-w-[200px] max-w-full">
-                  <input
-                    type="text"
-                    value={customColors.primary}
-                    onChange={(e) => handleCustomColorChange("primary", e.target.value)}
-                    className="w-full p-2 border border-border rounded-lg text-sm font-mono break-words"
-                    placeholder="#000000"
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Main headings and accents</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 break-words">Secondary Color</label>
-              <div className="flex items-center gap-3 flex-wrap">
-                <input
-                  type="color"
-                  value={customColors.secondary}
-                  onChange={(e) => handleCustomColorChange("secondary", e.target.value)}
-                  className="w-12 h-12 rounded-lg border border-border cursor-pointer shrink-0"
-                />
-                <div className="flex-1 min-w-[200px] max-w-full">
-                  <input
-                    type="text"
-                    value={customColors.secondary}
-                    onChange={(e) => handleCustomColorChange("secondary", e.target.value)}
-                    className="w-full p-2 border border-border rounded-lg text-sm font-mono break-words"
-                    placeholder="#000000"
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Subheadings and highlights</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 break-words">Accent Color</label>
-              <div className="flex items-center gap-3 flex-wrap">
-                <input
-                  type="color"
-                  value={customColors.accent}
-                  onChange={(e) => handleCustomColorChange("accent", e.target.value)}
-                  className="w-12 h-12 rounded-lg border border-border cursor-pointer shrink-0"
-                />
-                <div className="flex-1 min-w-[200px] max-w-full">
-                  <input
-                    type="text"
-                    value={customColors.accent}
-                    onChange={(e) => handleCustomColorChange("accent", e.target.value)}
-                    className="w-full p-2 border border-border rounded-lg text-sm font-mono break-words"
-                    placeholder="#000000"
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Buttons and links</p>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 bg-muted rounded-lg">
-            <h4 className="font-medium mb-2">Color Preview</h4>
-            <div className="flex items-center gap-4">
-              <div className="flex gap-2">
-                <div
-                  className="w-8 h-8 rounded-lg border border-gray-200"
-                  style={{ backgroundColor: customColors.primary }}
-                />
-                <div
-                  className="w-8 h-8 rounded-lg border border-gray-200"
-                  style={{ backgroundColor: customColors.secondary }}
-                />
-                <div
-                  className="w-8 h-8 rounded-lg border border-gray-200"
-                  style={{ backgroundColor: customColors.accent }}
-                />
-              </div>
-              <div className="text-sm text-muted-foreground">Your custom color combination</div>
-            </div>
           </div>
         </CardContent>
       </Card>

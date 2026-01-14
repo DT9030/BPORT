@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
+
 import ResumeUpload from "@/components/resume-upload"
 import PortfolioPreview from "@/components/portfolio-preview"
 import PortfolioEditor from "@/components/portfolio-editor"
 import ColorPicker from "@/components/color-picker"
 import { Badge } from "@/components/ui/badge" // Fixed import to use named import instead of default import
 import ExportModal from "@/components/export-modal"
+import { ProgressBar } from "@/components/progress-bar"
 import {
   ArrowLeft,
   FileText,
@@ -31,7 +32,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import FloatingIcons from "@/components/floating-icons"
 import { Sparkles, Star } from "lucide-react"
 
@@ -95,6 +96,7 @@ export default function BuilderPage() {
     "personal",
   )
   const [selectedCategory, setSelectedCategory] = useState<"fresher" | "professional" | "business" | null>(null)
+  const [navigationDirection, setNavigationDirection] = useState<"forward" | "backward">("forward")
   const [isBuilding, setIsBuilding] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState("minimal")
   const [colorScheme, setColorScheme] = useState<ColorScheme>({
@@ -120,6 +122,7 @@ export default function BuilderPage() {
   })
   const [showExportModal, setShowExportModal] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isColorSidebarOpen, setIsColorSidebarOpen] = useState(false)
 
   // Handle ESC key to close fullscreen
   useEffect(() => {
@@ -212,7 +215,6 @@ export default function BuilderPage() {
     { id: "questions", name: "Choose Method", completed: false },
     { id: "manual", name: "Content", completed: false },
     { id: "layouts", name: "Template", completed: false },
-    { id: "preview", name: "Preview", completed: false },
     { id: "colors", name: "Colors", completed: false },
     { id: "edit", name: "Final Edit", completed: false },
   ]
@@ -244,7 +246,7 @@ export default function BuilderPage() {
     setIsBuilding(true)
     setTimeout(() => {
       setIsBuilding(false)
-      setCurrentStep("preview")
+      setCurrentStep("colors")
     }, 1200)
   }
 
@@ -372,6 +374,7 @@ export default function BuilderPage() {
     const currentIndex = stepsOrder.indexOf(manualStep)
 
     if (currentIndex < stepsOrder.length - 1) {
+      setNavigationDirection("forward")
       setManualStep(stepsOrder[currentIndex + 1] as any)
     } else {
       setCurrentStep("layouts")
@@ -383,6 +386,7 @@ export default function BuilderPage() {
     const currentIndex = stepsOrder.indexOf(manualStep)
 
     if (currentIndex > 0) {
+      setNavigationDirection("backward")
       setManualStep(stepsOrder[currentIndex - 1] as any)
     } else {
       setCurrentStep("questions")
@@ -394,10 +398,8 @@ export default function BuilderPage() {
       handlePreviousManualStep()
     } else if (currentStep === "layouts") {
       handleStepChange(userData.buildMethod === "resume" ? "resume" : "manual")
-    } else if (currentStep === "preview") {
-      handleStepChange("layouts")
     } else if (currentStep === "colors") {
-      handleStepChange("preview")
+      handleStepChange("layouts")
     } else if (currentStep === "edit") {
       handleStepChange("colors")
     } else if (currentStep === "resume") {
@@ -434,14 +436,26 @@ export default function BuilderPage() {
 
           {/* Progress Bar */}
           <div className="w-full">
-            <Progress value={getProgressPercentage()} className="h-2" />
+            <ProgressBar currentStep={getCurrentStepIndex() + 1} totalSteps={steps.length} />
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {currentStep === "userCategory" && (
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={currentStep}
+            initial={{ x: 80, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -80, opacity: 0 }}
+            transition={{
+              duration: 0.45,
+              ease: [0.25, 0.1, 0.25, 1]
+            }}
+            className="relative overflow-hidden"
+          >
+            {currentStep === "userCategory" && (
           <div className="max-w-4xl mx-auto">
             <div className="mb-8 text-center">
               <Badge variant="outline" className="mb-3">
@@ -602,69 +616,54 @@ export default function BuilderPage() {
 
         {currentStep === "manual" && (
           <div className="max-w-4xl mx-auto">
-            {/* Category-specific quick questions */}
-            {selectedCategory && (
-              <Card className="mb-8">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5" />
-                    {selectedCategory === "fresher" && "Fresher Focus"}
-                    {selectedCategory === "professional" && "Professional Focus"}
-                    {selectedCategory === "business" && "Business Focus"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-4">
-                  {selectedCategory === "fresher" && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Target Role</label>
-                        <input
-                          type="text"
-                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                          value={userData.categoryAnswers?.targetRole || ""}
-                          onChange={(e) =>
-                            setUserData((d) => ({
-                              ...d,
-                              categoryAnswers: { ...d.categoryAnswers, targetRole: e.target.value },
-                            }))
-                          }
-                          placeholder="e.g., Frontend Intern, Data Analyst"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Relevant Coursework</label>
-                        <input
-                          type="text"
-                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                          value={userData.categoryAnswers?.coursework || ""}
-                          onChange={(e) =>
-                            setUserData((d) => ({
-                              ...d,
-                              categoryAnswers: { ...d.categoryAnswers, coursework: e.target.value },
-                            }))
-                          }
-                          placeholder="e.g., Algorithms, DBMS, Operating Systems"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium mb-2">Campus Projects</label>
-                        <textarea
-                          rows={3}
-                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                          value={userData.categoryAnswers?.campusProjects || ""}
-                          onChange={(e) =>
-                            setUserData((d) => ({
-                              ...d,
-                              categoryAnswers: { ...d.categoryAnswers, campusProjects: e.target.value },
-                            }))
-                          }
-                          placeholder="Briefly describe 1-2 campus projects you want to highlight"
-                        />
-                      </div>
-                    </>
-                  )}
-                  {selectedCategory === "professional" && (
-                    <>
+            {/* Manual Entry Navigation */}
+            <div className="mb-8">
+              <div className="flex flex-wrap gap-2 justify-center">
+                {[
+                  { id: "personal", label: "Personal Info", icon: User },
+                  { id: "experience", label: "Experience", icon: Briefcase },
+                  { id: "education", label: "Education", icon: GraduationCap },
+                  { id: "skills", label: "Skills", icon: Code },
+                  { id: "projects", label: "Projects", icon: Award },
+                ].map(({ id, label, icon: Icon }) => (
+                  <Button
+                    key={id}
+                    variant={manualStep === id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setManualStep(id as any)}
+                    className="flex items-center gap-2"
+                  >
+                    <Icon className="w-4 h-4" />
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={manualStep}
+                initial={{ x: navigationDirection === "forward" ? 80 : -80, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: navigationDirection === "forward" ? -80 : 80, opacity: 0 }}
+                transition={{
+                  duration: 0.45,
+                  ease: [0.25, 0.1, 0.25, 1]
+                }}
+                className="relative overflow-hidden"
+              >
+            {/* Personal Information */}
+            {manualStep === "personal" && (
+              <>
+                {selectedCategory === "professional" && (
+                  <Card className="mb-8">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="w-5 h-5" />
+                        Professional Focus
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2">Years of Experience</label>
                         <input
@@ -711,159 +710,83 @@ export default function BuilderPage() {
                           placeholder="e.g., AWS SAA, PMP"
                         />
                       </div>
-                    </>
-                  )}
-                  {selectedCategory === "business" && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Primary Service</label>
-                        <input
-                          type="text"
-                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                          value={userData.categoryAnswers?.service || ""}
-                          onChange={(e) =>
-                            setUserData((d) => ({
-                              ...d,
-                              categoryAnswers: { ...d.categoryAnswers, service: e.target.value },
-                            }))
-                          }
-                          placeholder="e.g., Web Development, Branding"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Notable Client</label>
-                        <input
-                          type="text"
-                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                          value={userData.categoryAnswers?.client || ""}
-                          onChange={(e) =>
-                            setUserData((d) => ({
-                              ...d,
-                              categoryAnswers: { ...d.categoryAnswers, client: e.target.value },
-                            }))
-                          }
-                          placeholder="e.g., Acme Inc."
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium mb-2">Case Study Highlight</label>
-                        <textarea
-                          rows={3}
-                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                          value={userData.categoryAnswers?.caseStudy || ""}
-                          onChange={(e) =>
-                            setUserData((d) => ({
-                              ...d,
-                              categoryAnswers: { ...d.categoryAnswers, caseStudy: e.target.value },
-                            }))
-                          }
-                          placeholder="Briefly summarize a recent project and outcome"
-                        />
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                    </CardContent>
+                  </Card>
+                )}
 
-            {/* Manual Entry Navigation */}
-            <div className="mb-8">
-              <div className="flex flex-wrap gap-2 justify-center">
-                {[
-                  { id: "personal", label: "Personal Info", icon: User },
-                  { id: "experience", label: "Experience", icon: Briefcase },
-                  { id: "education", label: "Education", icon: GraduationCap },
-                  { id: "skills", label: "Skills", icon: Code },
-                  { id: "projects", label: "Projects", icon: Award },
-                ].map(({ id, label, icon: Icon }) => (
-                  <Button
-                    key={id}
-                    variant={manualStep === id ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setManualStep(id as any)}
-                    className="flex items-center gap-2"
-                  >
-                    <Icon className="w-4 h-4" />
-                    {label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Personal Information */}
-            {manualStep === "personal" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="w-5 h-5" />
-                    Personal Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Full Name *</label>
-                    <input
-                      type="text"
-                      value={userData.fullName}
-                      onChange={(e) => setUserData({ ...userData, fullName: e.target.value })}
-                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-                      placeholder="Enter your full name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Professional Title *</label>
-                    <input
-                      type="text"
-                      value={userData.title}
-                      onChange={(e) => setUserData({ ...userData, title: e.target.value })}
-                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-                      placeholder="e.g., Software Developer, Designer, Marketing Manager"
-                      required
-                    />
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="w-5 h-5" />
+                      Personal Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Email *</label>
+                      <label className="block text-sm font-medium mb-2">Full Name *</label>
                       <input
-                        type="email"
-                        value={userData.email}
-                        onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+                        type="text"
+                        value={userData.fullName}
+                        onChange={(e) => setUserData({ ...userData, fullName: e.target.value })}
                         className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-                        placeholder="your.email@example.com"
+                        placeholder="Enter your full name"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Phone</label>
+                      <label className="block text-sm font-medium mb-2">Professional Title *</label>
                       <input
-                        type="tel"
-                        value={userData.phone}
-                        onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
+                        type="text"
+                        value={userData.title}
+                        onChange={(e) => setUserData({ ...userData, title: e.target.value })}
                         className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-                        placeholder="+1 (555) 123-4567"
+                        placeholder="e.g., Software Developer, Designer, Marketing Manager"
+                        required
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Professional Summary</label>
-                    <textarea
-                      rows={4}
-                      value={userData.summary}
-                      onChange={(e) => setUserData({ ...userData, summary: e.target.value })}
-                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none transition-colors"
-                      placeholder="Write a brief summary of your professional background and key achievements..."
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      This will be displayed prominently on your portfolio
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Email *</label>
+                        <input
+                          type="email"
+                          value={userData.email}
+                          onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
+                          placeholder="your.email@example.com"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Phone</label>
+                        <input
+                          type="tel"
+                          value={userData.phone}
+                          onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
+                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
+                          placeholder="+1 (555) 123-4567"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Professional Summary</label>
+                      <textarea
+                        rows={4}
+                        value={userData.summary}
+                        onChange={(e) => setUserData({ ...userData, summary: e.target.value })}
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none transition-colors"
+                        placeholder="Write a brief summary of your professional background and key achievements..."
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This will be displayed prominently on your portfolio
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
             )}
 
             {/* Experience Section */}
@@ -1098,9 +1021,9 @@ export default function BuilderPage() {
                     <Button
                       onClick={() =>
                         addSkill(
-                          document.querySelector(
+                          (document.querySelector(
                             'input[placeholder="Add a skill (e.g., React, Python, Project Management)"]',
-                          )!.value,
+                          ) as HTMLInputElement)?.value || '',
                         )
                       }
                     >
@@ -1266,7 +1189,9 @@ export default function BuilderPage() {
                 {manualStep === "projects" ? "Continue to Templates" : "Next"}
               </Button>
             </div>
-          </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
         )}
 
         {currentStep === "resume" && (
@@ -1298,150 +1223,7 @@ export default function BuilderPage() {
           />
         )}
 
-        {currentStep === "categories" && (
-          <div className="max-w-4xl mx-auto">
-            <div className="mb-8 text-center">
-              <h1 className="text-3xl font-bold mb-4">Choose Your Sections</h1>
-              <p className="text-muted-foreground">
-                Select which sections to include in your portfolio. You can always add or remove sections later.
-              </p>
-            </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  id: "about",
-                  name: "About Me",
-                  description: "Personal introduction and summary",
-                  icon: User,
-                  required: true,
-                  enabled: true,
-                },
-                {
-                  id: "experience",
-                  name: "Work Experience",
-                  description: "Professional work history",
-                  icon: Briefcase,
-                  required: false,
-                  enabled: userData.experience.length > 0,
-                },
-                {
-                  id: "education",
-                  name: "Education",
-                  description: "Academic background and qualifications",
-                  icon: GraduationCap,
-                  required: false,
-                  enabled: userData.education.length > 0,
-                },
-                {
-                  id: "skills",
-                  name: "Skills",
-                  description: "Technical and professional skills",
-                  icon: Code,
-                  required: false,
-                  enabled: userData.skills.length > 0,
-                },
-                {
-                  id: "projects",
-                  name: "Projects",
-                  description: "Portfolio of work and personal projects",
-                  icon: Award,
-                  required: false,
-                  enabled: userData.projects.length > 0,
-                },
-                {
-                  id: "contact",
-                  name: "Contact Info",
-                  description: "Ways to get in touch",
-                  icon: FileText,
-                  required: true,
-                  enabled: true,
-                },
-              ].map(({ id, name, description, icon: Icon, required, enabled }) => (
-                <Card
-                  key={id}
-                  className={`cursor-pointer transition-all duration-200 ${
-                    enabled ? "hover:shadow-lg border-primary bg-primary/5" : "hover:border-border/50 opacity-60"
-                  }`}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div
-                        className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                          enabled ? "bg-primary/10" : "bg-muted"
-                        }`}
-                      >
-                        <Icon className={`w-6 h-6 ${enabled ? "text-primary" : "text-muted-foreground"}`} />
-                      </div>
-                      {required ? (
-                        <Badge variant="secondary" className="text-xs">
-                          Required
-                        </Badge>
-                      ) : (
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={enabled}
-                            onChange={() => {
-                              // Toggle section logic would go here
-                            }}
-                            className="rounded border-border"
-                            disabled={required}
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <h3 className="font-semibold mb-2">{name}</h3>
-                    <p className="text-sm text-muted-foreground mb-4">{description}</p>
-
-                    {enabled && !required && (
-                      <div className="text-xs text-primary font-medium">✓ Content available</div>
-                    )}
-
-                    {!enabled && !required && <div className="text-xs text-muted-foreground">No content added yet</div>}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <div className="mt-8 p-6 bg-card border border-border rounded-lg">
-              <h3 className="font-semibold mb-2">Section Preview</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Your portfolio will include the following sections in this order:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {["About Me", "Work Experience", "Education", "Skills", "Projects", "Contact Info"]
-                  .filter((section, index) => {
-                    const sectionData = [
-                      { enabled: true },
-                      { enabled: userData.experience.length > 0 },
-                      { enabled: userData.education.length > 0 },
-                      { enabled: userData.skills.length > 0 },
-                      { enabled: userData.projects.length > 0 },
-                      { enabled: true },
-                    ]
-                    return sectionData[index]?.enabled
-                  })
-                  .map((section) => (
-                    <Badge key={section} variant="outline" className="bg-primary/5">
-                      {section}
-                    </Badge>
-                  ))}
-              </div>
-            </div>
-
-            <div className="flex justify-between mt-8">
-              <Button
-                variant="outline"
-                onClick={() => handleStepChange(userData.buildMethod === "resume" ? "resume" : "manual")}
-              >
-                Back
-              </Button>
-              <Button onClick={() => handleStepChange("layouts")}>Continue to Templates</Button>
-            </div>
-          </div>
-        )}
 
         {currentStep === "layouts" && (
           <div className="max-w-6xl mx-auto">
@@ -1640,122 +1422,12 @@ export default function BuilderPage() {
           </div>
         )}
 
-        {currentStep === "preview" && (
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-8 text-center">
-              <h1 className="text-3xl font-bold mb-4">Preview Your Portfolio</h1>
-              <p className="text-muted-foreground">
-                Review how your portfolio looks with the selected template and make any adjustments
-              </p>
-            </div>
 
-            <div className="grid lg:grid-cols-3 gap-8">
-              {/* Preview Panel */}
-              <div className="lg:col-span-2">
-                <div className="sticky top-24">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Eye className="w-5 h-5" />
-                      <span className="font-medium">Live Preview</span>
-                      <Badge variant="outline">{selectedTemplate}</Badge>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setIsFullscreen(true)}>
-                        <Maximize2 className="w-4 h-4 mr-2" />
-                        Expand
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleExport("pdf")}>
-                        <Download className="w-4 h-4 mr-2" />
-                        PDF
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleExport("link")}>
-                        <Share className="w-4 h-4 mr-2" />
-                        Share
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="border border-border rounded-lg overflow-hidden bg-white">
-                    <PortfolioPreview userData={getDummyData()} template={selectedTemplate} colorScheme={colorScheme} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Controls Panel */}
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start bg-transparent"
-                      onClick={() => handleStepChange("colors")}
-                    >
-                      <Palette className="w-4 h-4 mr-2" />
-                      Customize Colors
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start bg-transparent"
-                      onClick={() => handleStepChange("layouts")}
-                    >
-                      <FileText className="w-4 h-4 mr-2" />
-                      Change Template
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start bg-transparent"
-                      onClick={() => handleStepChange("manual")}
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Edit Content
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Portfolio Stats</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span>Sections:</span>
-                      <span className="font-medium">
-                        {[
-                          userData.fullName ? 1 : 0,
-                          userData.experience.length > 0 ? 1 : 0,
-                          userData.education.length > 0 ? 1 : 0,
-                          userData.skills.length > 0 ? 1 : 0,
-                          userData.projects.length > 0 ? 1 : 0,
-                        ].reduce((a, b) => a + b, 0)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Experience:</span>
-                      <span className="font-medium">{userData.experience.length} entries</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Skills:</span>
-                      <span className="font-medium">{userData.skills.length} skills</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Projects:</span>
-                      <span className="font-medium">{userData.projects.length} projects</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-
-            <div className="flex justify-end mt-8">
-              <Button onClick={() => handleStepChange("colors")}>Continue to Colors</Button>
-            </div>
-          </div>
-        )}
 
         {currentStep === "colors" && (
-          <div className="max-w-6xl mx-auto">
+          <div className="relative max-w-6xl mx-auto">
+
+
             <div className="mb-8 text-center">
               <h1 className="text-3xl font-bold mb-4">Customize Your Colors</h1>
               <p className="text-muted-foreground">
@@ -1763,32 +1435,72 @@ export default function BuilderPage() {
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* Color Picker */}
-              <div>
-                <ColorPicker selectedScheme={colorScheme} onSchemeChange={setColorScheme} />
-              </div>
+            {/* Color Picker Sidebar */}
+            <AnimatePresence>
+              {isColorSidebarOpen && (
+                <motion.div
+                  initial={{ x: -400, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -400, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="fixed left-0 top-0 h-full w-[600px] bg-card border-r border-border shadow-lg z-20"
+                >
+                  <div className="overflow-y-auto h-full scrollbar-thin scrollbar-track-background scrollbar-thumb-muted-foreground/20">
+                    <div className="sticky top-0 bg-card border-b border-border z-10 pt-8 px-4 pb-4 flex items-center justify-between">
+                      <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <Palette className="w-5 h-5" />
+                        Color Customization
+                      </h2>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsColorSidebarOpen(false)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="p-6">
+                      <ColorPicker selectedScheme={colorScheme} onSchemeChange={setColorScheme} />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-              {/* Live Preview */}
-              <div>
-                <div className="sticky top-24">
-                  <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                    <h3 className="font-semibold">Live Preview</h3>
+            {/* Portfolio Preview */}
+            <div className={`transition-all duration-300 ${isColorSidebarOpen ? 'ml-[600px]' : 'ml-0'}`}>
+              <div className="sticky top-24">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsColorSidebarOpen(!isColorSidebarOpen)}
+                    className="bg-[#71c66b] hover:bg-[#71c66b]/90 text-black border-[#71c66b]"
+                  >
+                    <Palette className="w-4 h-4 mr-2" />
+                    Customize Colors
+                  </Button>
+                  <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => setIsFullscreen(true)}>
                       <Maximize2 className="w-4 h-4 mr-1" />
                       Expand
                     </Button>
+                    <Button onClick={() => handleStepChange("edit")}>Continue to Final Edit</Button>
                   </div>
-                  <div className="border border-border rounded-lg overflow-hidden bg-white">
-                    <PortfolioPreview userData={getDummyData()} template={selectedTemplate} colorScheme={colorScheme} />
-                  </div>
+                </div>
+                <div className="border border-border rounded-lg overflow-hidden bg-white">
+                  <PortfolioPreview userData={getDummyData()} template={selectedTemplate} colorScheme={colorScheme} />
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end mt-8">
-              <Button onClick={() => handleStepChange("edit")}>Continue to Final Edit</Button>
-            </div>
+            {/* Overlay when sidebar is open */}
+            {isColorSidebarOpen && (
+              <div
+                className="fixed inset-0 bg-black/20 z-10"
+                onClick={() => setIsColorSidebarOpen(false)}
+              />
+            )}
           </div>
         )}
 
@@ -1821,6 +1533,8 @@ export default function BuilderPage() {
 
           </div>
         )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {isBuilding && (

@@ -225,3 +225,27 @@
 .floating-shape-pentagon:nth-child(2) {
   animation: float4 9.5s ease-in-out infinite;
 }
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000; /* pure black */
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.75 0.15 142.5); /* your --primary (#ACFFB1) */
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.72 0.14 142.5); /* your --secondary */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.75 0.15 142.5) #000000;
+}
